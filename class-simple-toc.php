@@ -125,8 +125,8 @@ class Simple_TOC {
     }
 
     public function generate_html($tree, $depth = '') {
-        $this->html .= '<ul>';
-        $prev_level = $this->headingOutline[0]['level'];
+        $this->html .= '<ul><!--newlevel-->';
+        $prev_level = null;
         $i=0;
         foreach( $tree as $t ) {
 
@@ -139,24 +139,27 @@ class Simple_TOC {
 
             $l_diff = $level - $parent_level;
 
-            $this->html .= '<li>';
+            $this->html .= '<li><!--' . $level . '-->';
+
             for( $k = 0; $k < $l_diff-1; $k++ ) {
-                    $this->html .= '<ul><li>';
+                $this->html .= '<ul><li>';
             }
             $this->html .= '<a href="#' . $t['id'] . '">';
-            $this->html .= $depth.'.'.$i . '. ' . $t['name'];
-            $this->html .= '</a>';
-            for( $k = 0; $k < $l_diff-1; $k++ ) {
-                    $this->html .= '</li></ul>';
-                
+            $depth = ltrim($depth, ".");
+            if( !empty($depth) ) {
+                $this->html .= $depth . '.';
             }
-
-            
+            $this->html .= $i . '. ' . $t['name'];
+            $this->html .= '</a>';
+           
             if( count($t['children']) > 0 ) {
                 $this->generate_html($t['children'], $depth.'.'.$i);
             }
+            for( $k = 0; $k < $l_diff-1; $k++ ) {
+                $this->html .= '</li></ul>';  
+            }
 
-            $this->html .= '</li>';
+            $this->html .= '</li><!--' . $level . '-end-->';
             $prev_level = $level;
         }
         $this->html .= '</ul>';
@@ -172,7 +175,7 @@ class Simple_TOC {
         }
 
         foreach ( $h as $v ) {
-            $count = $v->count();
+            $count = $v->length;
             for( $i=0; $i<$count; $i++ ) {
                 $node = $v->item($i);
                 $this->headingElems[] = $node;
@@ -183,6 +186,12 @@ class Simple_TOC {
         $this->create_outline();
         $this->tree = $this->create_tree();
         $this->generate_html($this->tree);
+        $wrapper_begin = '<div class="simple-toc">';
+        $wrapper_begin .= '<div class="simple-toc-title">Table of Contents</div>';
+        $wrapper_begin .= '<nav>';
+        $wrapper_end = '</nav>';
+        $wrapper_end .= '</div>';
+        $this->html = $wrapper_begin . $this->html . $wrapper_end;
     }
 
     public function toc() {
@@ -190,6 +199,7 @@ class Simple_TOC {
             return '';
         }
         $this->get_headings();
-        return $this->html . $this->content;
+        $this->content = @$this->dom->saveHTML();
+        return [$this->html, $this->content];
     }
 }
