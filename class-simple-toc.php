@@ -125,7 +125,7 @@ class Simple_TOC {
     }
 
     public function generate_html($tree, $depth = '') {
-        $this->html .= '<ul><!--newlevel-->';
+        $this->html .= '<ul>';
         $prev_level = null;
         $i=0;
         foreach( $tree as $t ) {
@@ -139,7 +139,7 @@ class Simple_TOC {
 
             $l_diff = $level - $parent_level;
 
-            $this->html .= '<li><!--' . $level . '-->';
+            $this->html .= '<li>';
 
             for( $k = 0; $k < $l_diff-1; $k++ ) {
                 $this->html .= '<ul><li>';
@@ -159,7 +159,7 @@ class Simple_TOC {
                 $this->html .= '</li></ul>';  
             }
 
-            $this->html .= '</li><!--' . $level . '-end-->';
+            $this->html .= '</li>';
             $prev_level = $level;
         }
         $this->html .= '</ul>';
